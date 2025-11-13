@@ -8,17 +8,7 @@
 
 .technology-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.technology-card h3 {
-    margin-top: 0;
-}
-
-.technology-card span {
-    display: block;
-    margin-top: 10px;
-    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .status-not-started {

@@ -1,82 +1,97 @@
-import { useState } from 'react';
-import './App.css';
-import TechnologyCard from './components/TechnologyCard';
+import { useState, useEffect } from 'react';
+import useTechnologies from './hooks/useTechnologies';
 import ProgressHeader from './components/ProgressHeader';
 import QuickActions from './components/QuickActions';
-
-interface Technology {
-  id: number;
-  title: string;
-  description: string;
-  status: 'not-started' | 'in-progress' | 'completed';
-}
+import TechnologyCard from './components/TechnologyCard';
+import SearchBox from './components/SearchBox';
+import type { Technology, Status } from './types';
+import './App.css';
 
 function App() {
-  const [technologies, setTechnologies] = useState<Technology[]>([
-    {
-      id: 1,
-      title: 'React Components',
-      description: 'Изучение базовых компонентов',
-      status: 'not-started'
-    },
-    {
-      id: 2,
-      title: 'JSX Syntax',
-      description: 'Освоение синтаксиса JSX',
-      status: 'not-started'
-    },
-    {
-      id: 3,
-      title: 'State Management',
-      description: 'Работа с состоянием компонентов',
-      status: 'not-started'
+  const {
+    technologies,
+    updateStatus,
+    updateNotes,
+    markAllCompleted,
+    resetAll,
+    exportData
+  } = useTechnologies();
+
+  const [filter, setFilter] = useState<Status | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredList, setFilteredList] = useState<Technology[]>([]);
+
+  useEffect(() => {
+    let list = technologies;
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(tech =>
+        tech.title.toLowerCase().includes(q)
+        || tech.description.toLowerCase().includes(q)
+      );
     }
-    // Добавьте больше технологий по желанию
-  ]);
 
-  const [filter, setFilter] = useState<'all' | 'not-started' | 'in-progress' | 'completed'>('all');
+    if (filter !== 'all') {
+      list = list.filter(tech => tech.status === filter);
+    }
 
-  const handleStatusChange = (id: number) => {
-    setTechnologies(prev =>
-      prev.map(tech =>
-        tech.id === id
-          ? {
-              ...tech,
-              status:
-              tech.status === 'not-started'
-                ? 'in-progress'
-                : tech.status === 'in-progress'
-                  ? 'completed'
-                  : 'not-started'
-            }
-          : tech
-      )
-    );
-  };
+    setFilteredList(list);
+  }, [technologies, searchQuery, filter]);
 
-  const filteredTechnologies = technologies.filter((tech) => {
-    if (filter === 'all') return true;
-    return tech.status === filter;
-  });
+  function handleStatusChange(id: number) {
+    const tech = technologies.find(t => t.id === id);
+    if (!tech) return;
+
+    const nextStatus = {
+      'not-started': 'in-progress',
+      'in-progress': 'completed',
+      'completed': 'not-started'
+    } as const;
+
+    updateStatus(id, nextStatus[tech.status]);
+  }
 
   return (
     <div className="App">
+      <h1>Трекер изучения технологий</h1>
+
       <ProgressHeader technologies={technologies} />
-      <QuickActions setTechnologies={setTechnologies} />
+
+      <SearchBox
+        onSearch={setSearchQuery}
+        count={filteredList.length}
+      />
+
       <div className="filter-buttons">
-        <button onClick={() => setFilter('all')}>Все</button>
-        <button onClick={() => setFilter('not-started')}>Не начатые</button>
-        <button onClick={() => setFilter('in-progress')}>В процессе</button>
-        <button onClick={() => setFilter('completed')}>Выполненные</button>
+        {(['all', 'not-started', 'in-progress', 'completed'] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={filter === f ? 'active' : ''}
+          >
+            {f === 'all'
+              ? 'Все'
+              : f === 'not-started'
+                ? 'Не начато'
+                : f === 'in-progress' ? 'В процессе' : 'Выполнено'}
+          </button>
+        ))}
       </div>
+
+      <QuickActions
+        onMarkAllCompleted={markAllCompleted}
+        onResetAll={resetAll}
+        onExport={exportData}
+      />
+
       <div className="technologies-list">
-        {filteredTechnologies.map(tech => (
+        {filteredList.map(tech => (
           <TechnologyCard
             key={tech.id}
-            title={tech.title}
-            description={tech.description}
-            status={tech.status}
-            onStatusChange={() => handleStatusChange(tech.id)}
+            tech={tech}
+            onStatusChange={handleStatusChange}
+            onNotesChange={updateNotes}
           />
         ))}
       </div>

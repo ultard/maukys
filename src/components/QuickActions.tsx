@@ -1,45 +1,37 @@
+import { useState } from 'react';
 import './QuickActions.css';
-import type { Dispatch, SetStateAction } from 'react';
 
 interface QuickActionsProps {
-  setTechnologies: Dispatch<
-    SetStateAction<
-      Array<{
-        id: number;
-        title: string;
-        description: string;
-        status: 'not-started' | 'in-progress' | 'completed';
-      }>
-    >
-  >;
+  onMarkAllCompleted: () => void;
+  onResetAll: () => void;
+  onExport: () => void;
 }
 
-function QuickActions({ setTechnologies }: QuickActionsProps) {
-  const markAllCompleted = () => {
-    setTechnologies(prev => prev.map(tech => ({ ...tech, status: 'completed' })));
-  };
+function QuickActions({ onMarkAllCompleted, onResetAll, onExport }: QuickActionsProps) {
+  const [showExportModal, setShowExportModal] = useState(false);
 
-  const resetAll = () => {
-    setTechnologies(prev => prev.map(tech => ({ ...tech, status: 'not-started' })));
-  };
-
-  const randomNext = () => {
-    setTechnologies((prev) => {
-      const notStarted = prev.filter(tech => tech.status === 'not-started');
-      if (notStarted.length === 0) return prev;
-      const randomIndex = Math.floor(Math.random() * notStarted.length);
-      const selectedId = notStarted[randomIndex].id;
-      return prev.map(tech =>
-        tech.id === selectedId ? { ...tech, status: 'in-progress' } : tech
-      );
-    });
+  const handleExport = () => {
+    onExport();
+    setShowExportModal(true);
   };
 
   return (
     <div className="quick-actions">
-      <button onClick={markAllCompleted}>Отметить все как выполненные</button>
-      <button onClick={resetAll}>Сбросить все статусы</button>
-      <button onClick={randomNext}>Случайный выбор следующей технологии</button>
+      <h3>Быстрые действия</h3>
+      <button onClick={onMarkAllCompleted}>Отметить все как выполненные</button>
+      <button onClick={onResetAll}>Сбросить все статусы</button>
+      <button onClick={handleExport}>Экспорт данных</button>
+
+      {showExportModal && (
+        <div className="modal-overlay" onClick={() => setShowExportModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h4>Экспорт данных</h4>
+            <p>Данные успешно экспортированы!</p>
+            <p><small>Файл скачан в папку загрузок.</small></p>
+            <button onClick={() => setShowExportModal(false)}>Закрыть</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

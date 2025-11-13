@@ -1,21 +1,35 @@
+import type { Technology } from '../types';
+import TechnologyNotes from './TechnologyNotes';
 import './TechnologyCard.css';
 
 interface TechnologyCardProps {
-  title: string;
-  description: string;
-  status: 'not-started' | 'in-progress' | 'completed';
-  onStatusChange: () => void;
+  tech: Technology;
+  onStatusChange: (id: number) => void;
+  onNotesChange: (id: number, notes: string) => void;
 }
 
-function TechnologyCard({ title, description, status, onStatusChange }: TechnologyCardProps) {
+function TechnologyCard({ tech, onStatusChange, onNotesChange }: TechnologyCardProps) {
   return (
-    <div className={`technology-card status-${status}`} onClick={onStatusChange}>
-      <h3>{title}</h3>
-      <p>{description}</p>
+    <div
+      className={`technology-card status-${tech.status}`}
+      onClick={() => onStatusChange(tech.id)}
+    >
+      <h3>{tech.title}</h3>
+      <p>{tech.description}</p>
       <span>
         Статус:
-        {status === 'not-started' ? 'Не начато' : status === 'in-progress' ? 'В процессе' : 'Завершено'}
+        {' '}
+        {
+          tech.status === 'not-started'
+            ? 'Не начато'
+            : tech.status === 'in-progress' ? 'В процессе' : 'Завершено'
+        }
       </span>
+      <TechnologyNotes
+        notes={tech.notes}
+        onNotesChange={onNotesChange}
+        techId={tech.id}
+      />
     </div>
   );
 }
