@@ -1,101 +1,31 @@
-import { useState, useEffect } from 'react';
-import useTechnologies from './hooks/useTechnologies';
-import ProgressHeader from './components/ProgressHeader';
-import QuickActions from './components/QuickActions';
-import TechnologyCard from './components/TechnologyCard';
-import SearchBox from './components/SearchBox';
-import type { Technology, Status } from './types';
+// src/App.jsx
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Navigation from './components/Navigation';
+import Home from './pages/Home';
+import TechnologyList from './pages/TechnologyList';
+import TechnologyDetail from './pages/TechnologyDetail';
+import AddTechnology from './pages/AddTechnology.tsx';
+import Statistics from './pages/Statistics';
+import Settings from './pages/Settings';
 import './App.css';
 
 function App() {
-  const {
-    technologies,
-    updateStatus,
-    updateNotes,
-    markAllCompleted,
-    resetAll,
-    exportData
-  } = useTechnologies();
-
-  const [filter, setFilter] = useState<Status | 'all'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredList, setFilteredList] = useState<Technology[]>([]);
-
-  useEffect(() => {
-    let list = technologies;
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(tech =>
-        tech.title.toLowerCase().includes(q)
-        || tech.description.toLowerCase().includes(q)
-      );
-    }
-
-    if (filter !== 'all') {
-      list = list.filter(tech => tech.status === filter);
-    }
-
-    setFilteredList(list);
-  }, [technologies, searchQuery, filter]);
-
-  function handleStatusChange(id: number) {
-    const tech = technologies.find(t => t.id === id);
-    if (!tech) return;
-
-    const nextStatus = {
-      'not-started': 'in-progress',
-      'in-progress': 'completed',
-      'completed': 'not-started'
-    } as const;
-
-    updateStatus(id, nextStatus[tech.status]);
-  }
-
   return (
-    <div className="App">
-      <h1>Трекер изучения технологий</h1>
-
-      <ProgressHeader technologies={technologies} />
-
-      <SearchBox
-        onSearch={setSearchQuery}
-        count={filteredList.length}
-      />
-
-      <div className="filter-buttons">
-        {(['all', 'not-started', 'in-progress', 'completed'] as const).map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={filter === f ? 'active' : ''}
-          >
-            {f === 'all'
-              ? 'Все'
-              : f === 'not-started'
-                ? 'Не начато'
-                : f === 'in-progress' ? 'В процессе' : 'Выполнено'}
-          </button>
-        ))}
+    <BrowserRouter basename="ktechys">
+      <div className="App">
+        <Navigation />
+        <main>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/technologies" element={<TechnologyList />} />
+            <Route path="/technologies/:techId" element={<TechnologyDetail />} />
+            <Route path="/add" element={<AddTechnology />} />
+            <Route path="/statistics" element={<Statistics />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </main>
       </div>
-
-      <QuickActions
-        onMarkAllCompleted={markAllCompleted}
-        onResetAll={resetAll}
-        onExport={exportData}
-      />
-
-      <div className="technologies-list">
-        {filteredList.map(tech => (
-          <TechnologyCard
-            key={tech.id}
-            tech={tech}
-            onStatusChange={handleStatusChange}
-            onNotesChange={updateNotes}
-          />
-        ))}
-      </div>
-    </div>
+    </BrowserRouter>
   );
 }
 

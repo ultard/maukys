@@ -1,14 +1,18 @@
 import './TechnologyNotes.css';
 
 interface TechnologyNotesProps {
-  notes: string;
+  notes?: string;
   onNotesChange: (techId: number, value: string) => void;
   techId: number;
 }
 
 function TechnologyNotes({ notes, onNotesChange, techId }: TechnologyNotesProps) {
   return (
-    <div className="technology-notes">
+    <div
+      className="technology-notes"
+      onClick={e => e.stopPropagation()}
+      onKeyDown={e => e.stopPropagation()}
+    >
       <label>Мои заметки:</label>
       <textarea
         value={notes}
@@ -17,7 +21,7 @@ function TechnologyNotes({ notes, onNotesChange, techId }: TechnologyNotesProps)
         rows={3}
       />
       <div className="notes-hint">
-        {notes.length > 0 ? `Заметка сохранена (${notes.length} символов)` : 'Добавьте заметку'}
+        {notes && notes.length > 0 ? `Заметка сохранена (${notes.length} символов)` : 'Добавьте заметку'}
       </div>
     </div>
   );

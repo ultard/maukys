@@ -1,4 +1,4 @@
-import type { Technology } from '../types';
+import type { Technology } from '@/types';
 import TechnologyNotes from './TechnologyNotes';
 import './TechnologyCard.css';
 

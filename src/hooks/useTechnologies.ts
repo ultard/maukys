@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Technology, Status } from '../types';
+import type { Technology, Status } from '@/types';
 
 const initialTechnologies: Technology[] = [
   { id: 1, title: 'React Components', description: 'Изучение базовых компонентов', status: 'not-started', notes: '', category: 'frontend' },
@@ -53,12 +53,31 @@ export default function useTechnologies() {
     );
   }
 
+  function addTechnology(input: Omit<Technology, 'id'>) {
+    setTechnologies((prev) => {
+      const newId = prev.length > 0
+        ? Math.max(...prev.map(t => t.id)) + 1
+        : 1;
+
+      const newTech: Technology = {
+        id: newId,
+        title: input.title.trim(),
+        description: input.description?.trim(),
+        status: input.status ?? 'not-started',
+        notes: input.notes?.trim() ?? '',
+        category: input.category ?? 'other'
+      };
+
+      return [...prev, newTech];
+    });
+  }
+
   function markAllCompleted() {
     setTechnologies(prev => prev.map(tech => ({ ...tech, status: 'completed' as const })));
   }
 
   function resetAll() {
-    setTechnologies(prev => prev.map(tech => ({ ...tech, status: 'not-started' as const })));
+    setTechnologies([]);
   }
 
   function exportData() {
@@ -74,6 +93,7 @@ export default function useTechnologies() {
 
   return {
     technologies,
+    addTechnology,
     updateStatus,
     updateNotes,
     markAllCompleted,
